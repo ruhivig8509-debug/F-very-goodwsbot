@@ -2925,8 +2925,8 @@ class RuhiJiBot:
         logger.info(f"[WEB] Flask server started on port {port} ✓")
         return flask_thread
 
-    def run(self):
-        """Main entry point — starts both web server and bot."""
+    async def run_async(self):
+        """Async run — starts both web server and bot."""
         logger.info("=" * 60)
         logger.info("    RUHI JI BOT — STARTING UP 🚀")
         logger.info("=" * 60)
@@ -2949,21 +2949,23 @@ class RuhiJiBot:
         logger.info("    RUHI JI IS NOW ONLINE! 👑✨")
         logger.info("=" * 60)
 
-        # Run the bot with polling
-        # drop_pending_updates=True to avoid processing old messages
-        # on restart (important for Render cold starts)
-        application.run_polling(
-            allowed_updates=Update.ALL_TYPES,
-            drop_pending_updates=True,
-            close_loop=False,
-            stop_signals=None,  # Handle signals manually
-            poll_interval=0.5,  # Fast polling for quick responses
-            timeout=30,
-            read_timeout=15,
-            write_timeout=15,
-            connect_timeout=15,
-            pool_timeout=15,
-        )
+        async with application:
+            await application.initialize()
+            await application.start()
+            await application.updater.start_polling(
+                allowed_updates=Update.ALL_TYPES,
+                drop_pending_updates=True,
+            )
+            logger.info("[BOT] Polling started, bot is running...")
+            # Keep running until stopped
+            import asyncio as _asyncio
+            while True:
+                await _asyncio.sleep(3600)
+
+    def run(self):
+        """Main entry point."""
+        import asyncio as _asyncio
+        _asyncio.run(self.run_async())
 
 
 # ============================================================
