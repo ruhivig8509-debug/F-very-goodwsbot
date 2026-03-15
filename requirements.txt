@@ -6,7 +6,7 @@
 python-telegram-bot[job-queue]==21.6
 
 # OpenAI SDK (for HuggingFace Router)
-openai==1.82.0
+openai==1.30.5
 
 # PostgreSQL Database
 psycopg2-binary==2.9.10
