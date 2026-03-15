@@ -347,7 +347,6 @@ class EmbeddedDatabaseManager:
                 maxconn=10,
                 dsn=self.database_url,
                 connect_timeout=10,
-                options="-c statement_timeout=30000"
             )
             logger.info("[DB] Connection pool created successfully ✓")
             self._create_tables()
