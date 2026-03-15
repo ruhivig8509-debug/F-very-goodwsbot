@@ -1,12 +1,8 @@
-# ============================================
-#   RUHI JI BOT — Python Dependencies
-# ============================================
-
 # Telegram Bot API
 python-telegram-bot[job-queue]==21.6
 
-# OpenAI SDK (for HuggingFace Router)
-openai==1.30.5
+# OpenAI SDK (for HuggingFace Router) - compatible with Python 3.14
+openai==1.14.3
 
 # PostgreSQL Database
 psycopg2-binary==2.9.10
@@ -20,5 +16,5 @@ gunicorn==23.0.0
 # Environment Variables
 python-dotenv==1.1.0
 
-# HTTP Client (dependency)
-httpx==0.28.1
+# HTTP Client
+httpx==0.27.0

@@ -446,76 +446,61 @@ class EmbeddedDatabaseManager:
 
     def _create_tables(self):
         """Create all required database tables."""
-        tables_sql = """
-        -- Users table
-        CREATE TABLE IF NOT EXISTS users (
-            user_id BIGINT PRIMARY KEY,
-            username VARCHAR(255) DEFAULT '',
-            first_name VARCHAR(255) DEFAULT '',
-            last_name VARCHAR(255) DEFAULT '',
-            role VARCHAR(50) DEFAULT 'user',
-            mood VARCHAR(50) DEFAULT 'default',
-            language VARCHAR(10) DEFAULT 'hinglish',
-            is_banned BOOLEAN DEFAULT FALSE,
-            message_count INTEGER DEFAULT 0,
-            first_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-
-        -- Chats table
-        CREATE TABLE IF NOT EXISTS chats (
-            chat_id BIGINT PRIMARY KEY,
-            chat_type VARCHAR(50) DEFAULT 'private',
-            title VARCHAR(255) DEFAULT '',
-            active_session_expiry TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-
-        -- Messages table (for sliding window memory)
-        CREATE TABLE IF NOT EXISTS messages (
-            id BIGSERIAL PRIMARY KEY,
-            chat_id BIGINT NOT NULL,
-            user_id BIGINT NOT NULL,
-            role VARCHAR(20) DEFAULT 'user',
-            message_text TEXT NOT NULL,
-            timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-
-        -- Create indexes for performance
-        CREATE INDEX IF NOT EXISTS idx_messages_chat_id
-            ON messages(chat_id);
-        CREATE INDEX IF NOT EXISTS idx_messages_timestamp
-            ON messages(chat_id, timestamp DESC);
-        CREATE INDEX IF NOT EXISTS idx_messages_chat_user
-            ON messages(chat_id, user_id);
-
-        -- Settings table
-        CREATE TABLE IF NOT EXISTS settings (
-            key VARCHAR(255) PRIMARY KEY,
-            value TEXT DEFAULT '',
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-
-        -- User-Chat relation for tracking
-        CREATE TABLE IF NOT EXISTS user_chats (
-            user_id BIGINT NOT NULL,
-            chat_id BIGINT NOT NULL,
-            joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            PRIMARY KEY (user_id, chat_id)
-        );
-
-        -- Broadcast log
-        CREATE TABLE IF NOT EXISTS broadcast_log (
-            id BIGSERIAL PRIMARY KEY,
-            message_text TEXT,
-            sent_count INTEGER DEFAULT 0,
-            failed_count INTEGER DEFAULT 0,
-            broadcast_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-        """
-        self.execute_query(tables_sql)
+        statements = [
+            """CREATE TABLE IF NOT EXISTS users (
+                user_id BIGINT PRIMARY KEY,
+                username VARCHAR(255) DEFAULT '',
+                first_name VARCHAR(255) DEFAULT '',
+                last_name VARCHAR(255) DEFAULT '',
+                role VARCHAR(50) DEFAULT 'user',
+                mood VARCHAR(50) DEFAULT 'default',
+                language VARCHAR(10) DEFAULT 'hinglish',
+                is_banned BOOLEAN DEFAULT FALSE,
+                message_count INTEGER DEFAULT 0,
+                first_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )""",
+            """CREATE TABLE IF NOT EXISTS chats (
+                chat_id BIGINT PRIMARY KEY,
+                chat_type VARCHAR(50) DEFAULT 'private',
+                title VARCHAR(255) DEFAULT '',
+                active_session_expiry TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+                is_active BOOLEAN DEFAULT TRUE,
+                added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )""",
+            """CREATE TABLE IF NOT EXISTS messages (
+                id BIGSERIAL PRIMARY KEY,
+                chat_id BIGINT NOT NULL,
+                user_id BIGINT NOT NULL,
+                role VARCHAR(20) DEFAULT 'user',
+                message_text TEXT NOT NULL,
+                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )""",
+            "CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id)",
+            "CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(chat_id, timestamp DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_messages_chat_user ON messages(chat_id, user_id)",
+            """CREATE TABLE IF NOT EXISTS settings (
+                key VARCHAR(255) PRIMARY KEY,
+                value TEXT DEFAULT '',
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )""",
+            """CREATE TABLE IF NOT EXISTS user_chats (
+                user_id BIGINT NOT NULL,
+                chat_id BIGINT NOT NULL,
+                joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                PRIMARY KEY (user_id, chat_id)
+            )""",
+            """CREATE TABLE IF NOT EXISTS broadcast_log (
+                id BIGSERIAL PRIMARY KEY,
+                message_text TEXT,
+                sent_count INTEGER DEFAULT 0,
+                failed_count INTEGER DEFAULT 0,
+                broadcast_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )""",
+        ]
+        for stmt in statements:
+            self.execute_query(stmt)
         logger.info("[DB] Tables created/verified ✓")
 
     def _seed_default_settings(self):
